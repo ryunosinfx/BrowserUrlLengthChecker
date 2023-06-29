@@ -1,4 +1,4 @@
-const VERSION = '1.0.11';
+const VERSION = '1.0.12';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -81,6 +81,7 @@ class ESMainView {
 	}
 }
 const p = Math.pow(2, 32);
+const u = new Uint32Array(3);
 class ESTester {
 	constructor(logElm, inputCounter, statusSTART, statusHash, statusLink, buttonMakeLink) {
 		this.logElm = logElm;
@@ -245,13 +246,13 @@ class ESTester {
 		const count = Math.ceil(targetLen / 4);
 		const a = [];
 		for (let i = 0; i < count; i++) {
-			const u1 = B.u32a(1).fill(Math.ceil(Math.random() * p));
-			const u2 = B.u32a(1).fill(Math.ceil(Math.random() * p));
-			const u3 = B.u32a(1).fill(Math.ceil(Math.random() * p));
-			const u = B64.jus([B.u8a(u1), B.u8a(u2), B.u8a(u3)]);
+			u[0] = Math.ceil(Math.random() * p);
+			u[1] = Math.ceil(Math.random() * p);
+			u[2] = Math.ceil(Math.random() * p);
 			a.push(B64.a2U(u.buffer));
 		}
 		const s = a.join('');
+		a.splice(0, a.length);
 		return url + s;
 	}
 	async validate() {
