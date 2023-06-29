@@ -1,4 +1,4 @@
-const VERSION = '1.0.12';
+const VERSION = '1.0.14';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -93,6 +93,7 @@ class ESTester {
 		this.buttonMakeLink = buttonMakeLink;
 		this.resolve = null;
 		this.isStop = false;
+		this.q = [];
 		this.init();
 	}
 	async init() {
@@ -150,22 +151,29 @@ class ESTester {
 		this.window.close();
 	}
 	log(text, value) {
-		if (this.logElm) {
-			const m = 100;
-			const lf = '\n';
-			const t = this.logElm.textContent;
-			const r = t ? t.split(lf) : [];
-			const n = r.length > m ? r.slice(r.length - m, r.length) : r;
-			this.logElm.textContent = `${n.join(lf)}${lf}${Date.now()} ${
-				typeof text !== 'string' ? JSON.stringify(text) : text
-			} ${value}`;
-		}
-		console.log(`${Date.now()} ${text}`, value);
+		this.q.push({ text, value });
+		ct(this.logTimer);
+		this.logTimer = st(() => {
+			if (this.logElm) {
+				const m = 100;
+				const lf = '\n';
+				const t = this.logElm.textContent;
+				const r = t ? t.split(lf) : [];
+				const n = r.length > m ? r.slice(r.length - m, r.length) : r;
+				const ql = this.q.length;
+				for (let i = 0; i < ql; i++) {
+					const { text, value } = this.q.shift();
+					n.push(`${Date.now()} ${typeof text !== 'string' ? JSON.stringify(text) : text} ${value}`);
+				}
+				this.logElm.textContent = n.join(lf);
+			}
+			console.log(`${Date.now()} ${text}`, value);
+		}, 100);
 	}
 	async stop() {
 		this.isStop = true;
 	}
-	async start() {
+	async start(maxTryCount = 100) {
 		this.isStop = false;
 		this.statusSTART.textContent = '-NOW being measured-';
 		const taretLen = this.inputCounter.value;
@@ -211,7 +219,7 @@ class ESTester {
 				await sleep(10);
 			}
 			count++;
-			if (count > 10) isClose = true;
+			if (count > maxTryCount) isClose = true;
 		}
 		const prefix = this.isStop ? 'STOPED' : 'COMPLETE';
 		const endMsg = `-${prefix}- ==URL length MAX:${max}byte == ua:` + navigator.userAgent;
