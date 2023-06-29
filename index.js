@@ -1,4 +1,4 @@
-const VERSION = '1.0.14';
+const VERSION = '1.0.15';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -240,7 +240,7 @@ class ESTester {
 			await this.openNewWindow(url);
 			st(() => {
 				r(false);
-			}, 2000);
+			}, 10000);
 		};
 		const result = await new Promise(f);
 		// this.log('this.tryOpenTheURL B result:' + result);
