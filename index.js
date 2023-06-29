@@ -1,4 +1,4 @@
-const VERSION = '1.0.9';
+const VERSION = '1.0.10';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -198,7 +198,7 @@ class ESTester {
 				);
 			} else {
 				const d1 = current - lastLen;
-				const d = max ? (d1 > 0 ? d1 : 100) : lastLen;
+				const d = max ? (d1 > 0 ? (d1 > current ? current : d1) : 100) : lastLen;
 				const diff = d < 0 ? Math.abs(Math.floor(current / 2)) : d;
 				this.log(
 					`count:${count}/current:${current}/lastLen:${lastLen}/max:${max}/is:${is} /isClose:${isClose} /diff:${diff}`
