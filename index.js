@@ -1,4 +1,4 @@
-const VERSION = '1.0.5';
+const VERSION = '1.0.6';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -183,7 +183,7 @@ class ESTester {
 					`count:${count}/current:${current}/lastLen:${lastLen}/max:${max}/is:${is} /isClose:${isClose}`
 				);
 			} else {
-				const diff = max ? current - lastLen : lastLen;
+				const diff = max ? (current - lastLen > 0 ? current - lastLen : 100) : lastLen;
 				this.log(
 					`count:${count}/current:${current}/lastLen:${lastLen}/max:${max}/is:${is} /isClose:${isClose} /diff:${diff}`
 				);
