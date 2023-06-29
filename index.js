@@ -1,4 +1,4 @@
-const VERSION = '1.0.6';
+const VERSION = '1.0.7';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -30,6 +30,12 @@ class ESMainView {
 			colC1,
 			'button',
 			{ text: 'START' },
+			{ margin: '1px', padding: '2px 10px', border: '#000 solid 1px', 'border-radius': '3px', cursor: 'pointer' }
+		);
+		const buttonStop = ViewUtil.add(
+			colC1,
+			'button',
+			{ text: 'STOP' },
 			{ margin: '1px', padding: '2px 10px', border: '#000 solid 1px', 'border-radius': '3px', cursor: 'pointer' }
 		);
 		const buttonMakeLink = ViewUtil.add(
@@ -66,6 +72,9 @@ class ESMainView {
 		ViewUtil.setOnClick(buttonTestStart, async () => {
 			est.start();
 		});
+		ViewUtil.setOnClick(buttonStop, async () => {
+			est.stop();
+		});
 		ViewUtil.setOnClick(buttonMakeLink, async () => {
 			est.makeLink();
 		});
@@ -82,6 +91,7 @@ class ESTester {
 		this.statusLink = statusLink;
 		this.buttonMakeLink = buttonMakeLink;
 		this.resolve = null;
+		this.isStop = false;
 		this.init();
 	}
 	async init() {
@@ -151,7 +161,11 @@ class ESTester {
 		}
 		console.log(`${Date.now()} ${text}`, value);
 	}
+	async stop() {
+		this.isStop = true;
+	}
 	async start() {
+		this.isStop = false;
 		this.statusSTART.textContent = '-NOW being measured-';
 		const taretLen = this.inputCounter.value;
 		let isClose = false;
@@ -161,7 +175,7 @@ class ESTester {
 		let count = 0;
 		lastLen = current;
 		let url = '';
-		while (isClose === false) {
+		while (isClose === false && !this.isStop) {
 			let is = 'NG';
 			const { charenge, result } = await this.tryOpenTheURL(current);
 			this.statusHash.textContent = `charenge(length:${charenge.length}/hash:${charenge.hash}) result(length:${result.length}/hash:${result.hash})`;
@@ -195,7 +209,8 @@ class ESTester {
 			}
 			count++;
 		}
-		const endMsg = `-COMPLETE- ==URL length MAX:${max}byte == ua:` + navigator.userAgent;
+		const prefix = this.isStop ? 'STOPED' : 'COMPLETE';
+		const endMsg = `-${prefix}- ==URL length MAX:${max}byte == ua:` + navigator.userAgent;
 		this.log(endMsg);
 		this.statusSTART.textContent = endMsg;
 	}
