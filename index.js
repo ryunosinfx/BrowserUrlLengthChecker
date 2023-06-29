@@ -1,4 +1,4 @@
-const VERSION = '1.0.10';
+const VERSION = '1.0.11';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -239,7 +239,7 @@ class ESTester {
 		return { charenge, result: JSON.parse(result) };
 	}
 	async buildUrl(targetLength) {
-		const url = location.href.split('?')[0] + '?q=';
+		const url = location.href.split('?')[0] + '?q=#';
 		const baseLen = url.length;
 		const targetLen = targetLength - baseLen;
 		const count = Math.ceil(targetLen / 4);
