@@ -197,7 +197,8 @@ class ESTester {
 					`count:${count}/current:${current}/lastLen:${lastLen}/max:${max}/is:${is} /isClose:${isClose}`
 				);
 			} else {
-				const d = max ? (current - lastLen > 0 ? current - lastLen : 100) : lastLen;
+				const d1 = current - lastLen;
+				const d = max ? (d1 > 0 ? d1 : 100) : lastLen;
 				const diff = d < 0 ? Math.abs(Math.floor(current / 2)) : d;
 				this.log(
 					`count:${count}/current:${current}/lastLen:${lastLen}/max:${max}/is:${is} /isClose:${isClose} /diff:${diff}`
@@ -209,6 +210,7 @@ class ESTester {
 				await sleep(10);
 			}
 			count++;
+			if (count > 10) isClose = true;
 		}
 		const prefix = this.isStop ? 'STOPED' : 'COMPLETE';
 		const endMsg = `-${prefix}- ==URL length MAX:${max}byte == ua:` + navigator.userAgent;
