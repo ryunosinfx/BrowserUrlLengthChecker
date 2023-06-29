@@ -1,3 +1,4 @@
+const VERSION = '1.0.5';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -7,6 +8,7 @@ class ESMainView {
 		const body = document.getElementsByTagName('body')[0];
 		body.appendChild(frame);
 		//----------------------------------------------------------------------------------------
+		ViewUtil.add(frame, 'h4', { text: 'Version:' + VERSION }, { margin: '5px 0px 2px 0px' });
 		ViewUtil.add(frame, 'hr');
 		const form = ViewUtil.add(frame, 'form', { action: './', method: 'GET', onsubmit: 'return false;' });
 		const rowCurl = ViewUtil.add(form, 'div', {}, { margin: '10px' });
@@ -165,7 +167,7 @@ class ESTester {
 			this.statusHash.textContent = `charenge(length:${charenge.length}/hash:${charenge.hash}) result(length:${result.length}/hash:${result.hash})`;
 			const isOK = result.hash === charenge.hash && result.length * 1 === charenge.length * 1;
 			this.log(
-				`count:${count}/isOK:${isOK}/${result.hash === charenge.hash}/${
+				`count:${count}/current:${current}/${charenge.length}/isOK:${isOK}/${result.hash === charenge.hash}/${
 					result.length * 1 === charenge.length * 1
 				}/ ${this.statusHash.textContent}`
 			);
