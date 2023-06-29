@@ -181,11 +181,11 @@ class ESTester {
 					`count:${count}/current:${current}/lastLen:${lastLen}/max:${max}/is:${is} /isClose:${isClose}`
 				);
 			} else {
-				const diff = current - lastLen;
+				const diff = max ? current - lastLen : lastLen;
 				this.log(
 					`count:${count}/current:${current}/lastLen:${lastLen}/max:${max}/is:${is} /isClose:${isClose} /diff:${diff}`
 				);
-				if (count > 0 && Math.abs(diff) < 10) {
+				if (max > 0 && count > 0 && Math.abs(diff) < 10) {
 					isClose = true;
 				}
 				current = current - Math.floor(diff / 2);
@@ -211,7 +211,7 @@ class ESTester {
 			await this.openNewWindow(url);
 			st(() => {
 				r(false);
-			}, 10000);
+			}, 2000);
 		};
 		const result = await new Promise(f);
 		// this.log('this.tryOpenTheURL B result:' + result);
