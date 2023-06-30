@@ -1,4 +1,4 @@
-const VERSION = '1.0.15';
+const VERSION = '1.0.16';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -151,7 +151,7 @@ class ESTester {
 		this.window.close();
 	}
 	log(text, value) {
-		this.q.push({ text, value });
+		this.q.push({ text, value, now: Date.now() });
 		ct(this.logTimer);
 		this.logTimer = st(() => {
 			if (this.logElm) {
@@ -162,8 +162,8 @@ class ESTester {
 				const n = r.length > m ? r.slice(r.length - m, r.length) : r;
 				const ql = this.q.length;
 				for (let i = 0; i < ql; i++) {
-					const { text, value } = this.q.shift();
-					n.push(`${Date.now()} ${typeof text !== 'string' ? JSON.stringify(text) : text} ${value}`);
+					const { text, value, now } = this.q.shift();
+					n.push(`${now} ${typeof text !== 'string' ? JSON.stringify(text) : text} ${value}`);
 				}
 				this.logElm.textContent = n.join(lf);
 			}
