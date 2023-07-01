@@ -1,4 +1,4 @@
-const VERSION = '1.0.16';
+const VERSION = '1.0.17';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -97,26 +97,30 @@ class ESTester {
 		this.init();
 	}
 	async init() {
-		if (this.isChild()) {
-			const v = await this.validate();
-			LocalStorageMessanger.send('ESTester', v, this);
-		} else {
-			LocalStorageMessanger.setOnRecieve(
-				'ESTester',
-				async (prefix, event) => {
-					this.log('event:', event.newValue);
-					if (this.resolve) {
-						clearTimeout(this.timer);
-						if (this.window) this.window.close();
-						this.resolve(event.newValue);
-					}
-				},
-				this
-			);
-			const url = location.href;
-			const hash = await H.d(url);
-			this.statusHash.textContent = `CURRENT url hash:${hash} / size:${url.length}`;
-			this.statusLink.setAttribute('href', url);
+		try {
+			if (this.isChild()) {
+				const v = await this.validate();
+				LocalStorageMessanger.send('ESTester', v, this);
+			} else {
+				LocalStorageMessanger.setOnRecieve(
+					'ESTester',
+					async (prefix, event) => {
+						this.log('event:', event.newValue);
+						if (this.resolve) {
+							clearTimeout(this.timer);
+							if (this.window) this.window.close();
+							this.resolve(event.newValue);
+						}
+					},
+					this
+				);
+				const url = location.href;
+				const hash = await H.d(url);
+				this.statusHash.textContent = `CURRENT url hash:${hash} / size:${url.length}`;
+				this.statusLink.setAttribute('href', url);
+			}
+		} catch (e) {
+			ef(e, 'init', this);
 		}
 	}
 	async makeLink() {
@@ -155,6 +159,13 @@ class ESTester {
 		ct(this.logTimer);
 		this.logTimer = st(() => {
 			if (this.logElm) {
+				if (this.isLocked) {
+					return;
+				}
+				this.isLocked = true;
+				st(() => {
+					this.isLocked = false;
+				}, 10000);
 				const m = 100;
 				const lf = '\n';
 				const t = this.logElm.textContent;
@@ -166,6 +177,7 @@ class ESTester {
 					n.push(`${now} ${typeof text !== 'string' ? JSON.stringify(text) : text} ${value}`);
 				}
 				this.logElm.textContent = n.join(lf);
+				this.isLocked = false;
 			}
 			console.log(`${Date.now()} ${text}`, value);
 		}, 100);
@@ -251,17 +263,30 @@ class ESTester {
 		const url = location.href.split('?')[0] + '?q=#';
 		const baseLen = url.length;
 		const targetLen = targetLength - baseLen;
-		const count = Math.ceil(targetLen / 4);
+		const count = Math.ceil(targetLen / 16);
 		const a = [];
+		let sum = 0,
+			min = 1000,
+			max = 0;
 		for (let i = 0; i < count; i++) {
 			u[0] = Math.ceil(Math.random() * p);
 			u[1] = Math.ceil(Math.random() * p);
 			u[2] = Math.ceil(Math.random() * p);
-			a.push(B64.a2U(u.buffer));
+			const b = B64.a2U(u.buffer);
+			a.push(b);
+			const blen = b.length;
+			max = max < blen ? blen : max;
+			min = min > blen ? blen : min;
+			sum += blen;
+			if (targetLen <= sum) {
+				break;
+			}
 		}
 		const s = a.join('');
+		const t = s.substring(0, targetLen);
 		a.splice(0, a.length);
-		return url + s;
+		this.log(`targetLen:${targetLen}/sum:${sum}/min:${min}/max:${max}/tlen:${t.length}`);
+		return url + t;
 	}
 	async validate() {
 		const url = location.href;
