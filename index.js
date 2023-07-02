@@ -1,4 +1,4 @@
-const VERSION = '1.0.18';
+const VERSION = '1.0.19';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -69,6 +69,7 @@ class ESMainView {
 			{ text: 'Link for Bookmark Making Challenge!' },
 			{ margin: '1px', fontSize: '120%' }
 		);
+		const buttonLinkCopy = ViewUtil.add(colC12, 'button', { text: 'Copy URL' }, { margin: '1px' });
 		const rowC2 = ViewUtil.add(form, 'div', {}, { margin: '10px' });
 		ViewUtil.add(rowC2, 'h6', { text: 'STATUS' }, { margin: '5px 0px 2px 0px' });
 		const colC2 = ViewUtil.add(rowC2, 'div', {}, { margin: '1px 10px' });
@@ -96,6 +97,9 @@ class ESMainView {
 		});
 		ViewUtil.setOnClick(buttonMakeBookmarklet, async () => {
 			est.makeBookmarklet();
+		});
+		ViewUtil.setOnClick(buttonLinkCopy, async () => {
+			est.copyLink();
 		});
 	}
 }
@@ -337,6 +341,11 @@ class ESTester {
 		const url = `${pureJs}//${hash}//${urlComment}`;
 		this.statusHash.textContent = `BOOKMARKLET MAKED! CURRENT url hash:${hash} / size:${url.length}`;
 		this.statusLink.setAttribute('href', url);
+	}
+	async copyLink() {
+		const url = this.statusLink.getAttribute('href');
+		await ClipBoard.copy(url);
+		alert('url copied!' + url);
 	}
 }
 
@@ -669,5 +678,14 @@ class LocalStorageMessanger {
 	}
 	static removeOnRecieve() {
 		window.removeEventListener('storage', cache.listene);
+	}
+}
+
+class ClipBoard {
+	static past() {
+		return navigator.clipboard.readText();
+	}
+	static copy(text = '<empty clipboard>') {
+		return navigator.clipboard.writeText(text);
 	}
 }
