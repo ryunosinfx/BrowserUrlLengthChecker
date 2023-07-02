@@ -1,4 +1,4 @@
-const VERSION = '1.0.17';
+const VERSION = '1.0.18';
 class ESMainView {
 	constructor() {
 		this.url = location.href;
@@ -20,7 +20,17 @@ class ESMainView {
 			colCurl02,
 			'input',
 			{ name: 'inputUrl', type: 'number' },
-			{ margin: '5px', width: '90vw' }
+			{ margin: '5px', width: '10em' }
+		);
+		//////////////////////////
+		const colCurl03 = ViewUtil.add(rowCurl, 'div', {}, { margin: '1px' });
+		ViewUtil.add(colCurl03, 'h4', { text: 'Bookmarklet input ' }, { margin: '5px 0px 2px 0px' });
+		const colCurl04 = ViewUtil.add(rowCurl, 'div', {}, { margin: '1px' });
+		const textareaBookMarklet = ViewUtil.add(
+			colCurl04,
+			'textarea',
+			{ value: '' },
+			{ margin: '5px 0px 2px 0px', height: '20wh', width: '90vw' }
 		);
 		const rowC = ViewUtil.add(form, 'div', {}, { margin: '1px 10px' });
 		ViewUtil.add(rowC, 'h4', { text: 'start' }, { margin: '5px 0px 2px 0px' });
@@ -44,6 +54,12 @@ class ESMainView {
 			{ text: 'Make Link' },
 			{ margin: '1px', padding: '2px 10px', border: '#000 solid 1px', 'border-radius': '3px', cursor: 'pointer' }
 		);
+		const buttonMakeBookmarklet = ViewUtil.add(
+			colC1,
+			'button',
+			{ text: 'Make Bookmarklet' },
+			{ margin: '1px', padding: '2px 10px', border: '#000 solid 1px', 'border-radius': '3px', cursor: 'pointer' }
+		);
 		const colC11 = ViewUtil.add(rowC, 'div', {}, { margin: '1px 20px' });
 		const statusSTART = ViewUtil.add(colC11, 'span', { text: '-stop-' }, { margin: '1px', fontSize: '120%' });
 		const colC12 = ViewUtil.add(rowC, 'div', {}, { margin: '1px 20px' });
@@ -64,7 +80,7 @@ class ESMainView {
 		);
 		const rowD = ViewUtil.add(frame, 'div', {}, { margin: '10px' });
 		const colClog = ViewUtil.add(rowD, 'div', {}, { margin: '12px', whiteSpace: 'pre', fontSize: '60%' });
-		const est = new ESTester(colClog, inputCount, statusSTART, statusHash, statusLink, buttonMakeLink);
+		const est = new ESTester(colClog, inputCount, statusSTART, statusHash, statusLink, textareaBookMarklet);
 
 		ViewUtil.setOnClick(buttonOpenNewTab, async () => {
 			est.openNewWindow();
@@ -78,25 +94,29 @@ class ESMainView {
 		ViewUtil.setOnClick(buttonMakeLink, async () => {
 			est.makeLink();
 		});
+		ViewUtil.setOnClick(buttonMakeBookmarklet, async () => {
+			est.makeBookmarklet();
+		});
 	}
 }
 const p = Math.pow(2, 32);
 const u = new Uint32Array(3);
 class ESTester {
-	constructor(logElm, inputCounter, statusSTART, statusHash, statusLink, buttonMakeLink) {
+	constructor(logElm, inputCounter, statusSTART, statusHash, statusLink, textareaBookMarklet) {
 		this.logElm = logElm;
 		this.inputCounter = inputCounter;
 		this.inputCounter.value = 65533; //Upto firefox bookmark size;
 		this.statusSTART = statusSTART;
 		this.statusHash = statusHash;
 		this.statusLink = statusLink;
-		this.buttonMakeLink = buttonMakeLink;
+		this.textareaBookMarklet = textareaBookMarklet;
 		this.resolve = null;
 		this.isStop = false;
 		this.q = [];
 		this.init();
 	}
 	async init() {
+		this.textareaBookMarklet.value = "javascript:var a=function(){alert('hello!');};a();";
 		try {
 			if (this.isChild()) {
 				const v = await this.validate();
@@ -259,9 +279,9 @@ class ESTester {
 		// this.log('this.tryOpenTheURL C charenge:' + JSON.stringify(charenge));
 		return { charenge, result: JSON.parse(result) };
 	}
-	async buildUrl(targetLength) {
+	async buildUrl(targetLength, isWithPrefix = true) {
 		const url = location.href.split('?')[0] + '?q=#';
-		const baseLen = url.length;
+		const baseLen = isWithPrefix ? url.length : 0;
 		const targetLen = targetLength - baseLen;
 		const count = Math.ceil(targetLen / 16);
 		const a = [];
@@ -286,7 +306,7 @@ class ESTester {
 		const t = s.substring(0, targetLen);
 		a.splice(0, a.length);
 		this.log(`targetLen:${targetLen}/sum:${sum}/min:${min}/max:${max}/tlen:${t.length}`);
-		return url + t;
+		return (isWithPrefix ? url : '') + t;
 	}
 	async validate() {
 		const url = location.href;
@@ -304,6 +324,19 @@ class ESTester {
 		} catch (e) {
 			return false;
 		}
+	}
+	async makeBookmarklet() {
+		const current = this.inputCounter.value;
+		const js = this.textareaBookMarklet.value;
+		const pureJs = js.split(/\r\n|\r|\n/g).join(' ');
+		const hash1 = await H.d(pureJs);
+		const target = current - pureJs.length - 4 - hash1.length;
+		const urlComment = await this.buildUrl(target, false);
+		this.log('link url length:' + current + ' /urlComment.length:' + urlComment.length);
+		const hash = await H.d(pureJs);
+		const url = `${pureJs}//${hash}//${urlComment}`;
+		this.statusHash.textContent = `BOOKMARKLET MAKED! CURRENT url hash:${hash} / size:${url.length}`;
+		this.statusLink.setAttribute('href', url);
 	}
 }
 
